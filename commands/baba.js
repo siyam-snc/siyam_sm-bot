@@ -44,27 +44,13 @@ const luckyItems = [
 ];
 
 async function runBabaPrediction(bot, chatId, messageId, senderName, targetName) {
-  const loadingText = 
-`🔮 » 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
-━━━━━━━━━━━━━━━━━━
-বাবা সিয়াম তোমার ভবিষ্যৎবাণী করছে প্লিজ ওয়েট করুন...⏳
-━━━━━━━━━━━━━━━━━━`;
-
-  let loadingMsg = null;
   try {
-    loadingMsg = await bot.sendMessage(chatId, loadingText, {
-      reply_to_message_id: messageId
-    });
-  } catch (e) {
-    console.error("Loading Msg Error:", e.message);
-  }
+    const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+    const randomPrediction = predictions[Math.floor(Math.random() * predictions.length)];
+    const randomItem = luckyItems[Math.floor(Math.random() * luckyItems.length)];
+    const loveScore = Math.floor(Math.random() * 101);
 
-  const randomTitle = titles[Math.floor(Math.random() * titles.length)];
-  const randomPrediction = predictions[Math.floor(Math.random() * predictions.length)];
-  const randomItem = luckyItems[Math.floor(Math.random() * luckyItems.length)];
-  const loveScore = Math.floor(Math.random() * 101);
-
-  const magicResponse = 
+    const magicResponse = 
 `🔮 » 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ━━━━━━━━━━━━━━━━━━
 
@@ -81,12 +67,11 @@ async function runBabaPrediction(bot, chatId, messageId, senderName, targetName)
 ━━━━━━━━━━━━━━━━━━
 🏆 » 𝐍𝐈𝐉𝐇𝐔𝐌-𝐂𝐇𝐀𝐓-𝗕𝗢𝗧 ⚡`;
 
-  await bot.sendMessage(chatId, magicResponse, {
-    reply_to_message_id: messageId
-  });
-
-  if (loadingMsg && loadingMsg.message_id) {
-    bot.deleteMessage(chatId, loadingMsg.message_id).catch(() => {});
+    await bot.sendMessage(chatId, magicResponse, {
+      reply_to_message_id: messageId
+    });
+  } catch (err) {
+    console.error("Baba Send Error:", err.message);
   }
 }
 
@@ -99,77 +84,88 @@ module.exports = {
   category: "fun",
   shortDescription: "Magical Fortune Predictor & Auto Target 🔮",
 
-  execute: async (bot, msg, argsText) => {
-    const chatId = msg.chat.id;
-    const messageId = msg.message_id;
-    const senderName = msg.from.first_name || "COMMANDER USER";
-    const args = argsText ? argsText.trim().split(/\s+/) : [];
+  execute: async (bot, msg, argsText = "") => {
+    try {
+      const chatId = msg.chat.id;
+      const messageId = msg.message_id;
+      const senderName = msg.from?.first_name || "COMMANDER USER";
+      
+      const text = (typeof argsText === "string" ? argsText : msg.text || "").trim();
+      const args = text.split(/\s+/);
+      const subCommand = args[0]?.toLowerCase();
 
-    // ১. অটো টার্গেট অন (baba on)
-    if (args[0]?.toLowerCase() === "on") {
-      if (!msg.reply_to_message || !msg.reply_to_message.from) {
+      // ১. অটো টার্গেট অন (/baba on)
+      if (subCommand === "on") {
+        if (!msg.reply_to_message || !msg.reply_to_message.from) {
+          return bot.sendMessage(
+            chatId,
+            "⚠️ যাকে অটো টার্গেট করতে চান তার মেসেজে রিপ্লাই দিয়ে '/baba on' লিখুন!",
+            { reply_to_message_id: messageId }
+          );
+        }
+
+        const targetUser = msg.reply_to_message.from;
+        const targetId = targetUser.id;
+        const targetName = targetUser.first_name || "TARGET USER";
+
+        global.babaAutoTargets[targetId] = { targetName };
+
         return bot.sendMessage(
           chatId,
-          "⚠️ যাকে অটো টার্গেট করতে চান তার মেসেজে রিপ্লাই দিয়ে '/baba on' লিখুন!",
+          `✅ [ ${targetName} ] এর জন্য বাবা সিয়ামের অটো ভবিষ্যৎবাণী মোড চালু করা হলো!`,
           { reply_to_message_id: messageId }
         );
       }
 
-      const targetUser = msg.reply_to_message.from;
-      const targetId = targetUser.id;
-      const targetName = targetUser.first_name || "TARGET USER";
-
-      global.babaAutoTargets[targetId] = { targetName };
-
-      return bot.sendMessage(
-        chatId,
-        `✅ [ ${targetName} ] এর জন্য বাবা সিয়ামের অটো ভবিষ্যৎবাণী মোড চালু করা হলো! এখন থেকে যেকোনো মেসেজে উত্তর পাবে।`,
-        { reply_to_message_id: messageId }
-      );
-    }
-
-    // ২. অটো টার্গেট অফ (baba off)
-    if (args[0]?.toLowerCase() === "off") {
-      if (msg.reply_to_message && msg.reply_to_message.from) {
-        const targetId = msg.reply_to_message.from.id;
-        if (global.babaAutoTargets[targetId]) {
-          delete global.babaAutoTargets[targetId];
-          return bot.sendMessage(chatId, "❌ অটো ভবিষ্যৎবাণী মোড বন্ধ করা হলো।", {
-            reply_to_message_id: messageId
-          });
+      // ২. অটো টার্গেট অফ (/baba off)
+      if (subCommand === "off") {
+        if (msg.reply_to_message && msg.reply_to_message.from) {
+          const targetId = msg.reply_to_message.from.id;
+          if (global.babaAutoTargets[targetId]) {
+            delete global.babaAutoTargets[targetId];
+            return bot.sendMessage(chatId, "❌ অটো ভবিষ্যৎবাণী মোড বন্ধ করা হলো।", {
+              reply_to_message_id: messageId
+            });
+          }
         }
+
+        global.babaAutoTargets = {};
+        return bot.sendMessage(chatId, "❌ সব রানিং অটো ভবিষ্যৎবাণী মোড বন্ধ করা হলো।", {
+          reply_to_message_id: messageId
+        });
       }
 
-      global.babaAutoTargets = {};
-      return bot.sendMessage(chatId, "❌ সব রানিং অটো ভবিষ্যৎবাণী মোড বন্ধ করা হলো।", {
-        reply_to_message_id: messageId
-      });
-    }
+      // ৩. সাধারণ ভবিষ্যৎবাণী
+      let targetName = senderName;
+      if (msg.reply_to_message && msg.reply_to_message.from) {
+        targetName = msg.reply_to_message.from.first_name || "TARGET USER";
+      }
 
-    
-    let targetName = senderName;
-    if (msg.reply_to_message && msg.reply_to_message.from) {
-      targetName = msg.reply_to_message.from.first_name || "TARGET USER";
+      await runBabaPrediction(bot, chatId, messageId, senderName, targetName);
+    } catch (e) {
+      console.error("Baba Execute Error:", e.message);
     }
-
-    await runBabaPrediction(bot, chatId, messageId, senderName, targetName);
   },
 
-
+  // ৪. অটো চ্যাট লিসেনার
   onChat: async (bot, msg) => {
-    if (!msg || !msg.from) return;
+    try {
+      if (!msg || !msg.from) return;
 
-    const senderId = msg.from.id;
-    if (global.babaAutoTargets && global.babaAutoTargets[senderId]) {
-      const senderName = msg.from.first_name || "User";
-      const targetData = global.babaAutoTargets[senderId];
-      await runBabaPrediction(
-        bot,
-        msg.chat.id,
-        msg.message_id,
-        senderName,
-        targetData.targetName || senderName
-      );
+      const senderId = msg.from.id;
+      if (global.babaAutoTargets && global.babaAutoTargets[senderId]) {
+        const senderName = msg.from.first_name || "User";
+        const targetData = global.babaAutoTargets[senderId];
+        await runBabaPrediction(
+          bot,
+          msg.chat.id,
+          msg.message_id,
+          senderName,
+          targetData.targetName || senderName
+        );
+      }
+    } catch (e) {
+      console.error("Baba OnChat Error:", e.message);
     }
   }
 };
