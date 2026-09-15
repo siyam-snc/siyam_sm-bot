@@ -88,14 +88,14 @@ module.exports = {
 `  𝗢𝗪𝗡𝗘𝗥 𝗦𝗜𝗬𝗔𝗠-𝗛𝗔𝗦𝗔𝗡
 ───────────────
 » 🛠 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗠𝗔𝗡𝗔𝗚𝗘𝗥
-» 🤖 𝗕𝗢𝗧: @${botUsername}
+» 🤖 𝗕𝗢𝗧 𝗡𝗔𝗠𝗘: @${botUsername}
 ───────────────
-» ⚙️ /cmd load filename
-» ⚙️ /cmd unload filename
+» ⚙️ /cmd load <filename>
+» ⚙️ /cmd unload <filename>
 » ⚙️ /cmd loadall
-» ⚙️ /cmd install filename.js code
+» ⚙️ /cmd install <filename.js> <code>
 ───────────────
-» 👑 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝗦𝗔𝗡 👑`;
+» 👑 𝗢𝗪𝗡𝗘𝗥: 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝗦𝗔𝗡 👑`;
 
       return bot.sendMessage(chatId, captionText, {
         reply_to_message_id: messageId,
@@ -172,7 +172,7 @@ module.exports = {
 ───────────────
 » 📁 𝗙𝗜𝗟𝗘 𝗡𝗔𝗠𝗘: ${fileName}
 » ⚙️ 𝗖𝗢𝗠𝗠𝗔𝗡𝗗: ${installedCmd.name || (installedCmd.config && installedCmd.config.name) || "N/A"}
-» 👑 𝗔𝗨𝗧𝗛𝗢𝗥: ${installedCmd.author || (installedCmd.config && installedCmd.config.author) || "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝗦𝗔𝗡 👑"}
+» 👑 𝗔𝗨𝗧𝗛𝗢𝗥: ${installedCmd.author || (installedCmd.config && installedCmd.config.author) || "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝐒𝗔𝗡 👑"}
 » 🤖 𝗕𝗢𝗧 𝗡𝗔𝗠𝗘: @${botUsername}
 ───────────────
 » 🏷️ 𝗖𝗔𝗧𝗘𝗚𝗢𝗥𝗬: ${installedCmd.category || (installedCmd.config && installedCmd.config.category) || "system"}
@@ -181,7 +181,7 @@ module.exports = {
 ───────────────
 » 📝 𝗦𝗧𝗔𝗧𝗨𝗦: Successfully Installed & Loaded!
 ───────────────
-» 👑 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝗦𝗔𝗡 👑`;
+» 👑 𝗢𝗪𝗡𝗘𝗥: 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝗦𝗔𝗡 👑`;
 
         if (loadingMsg) await bot.deleteMessage(chatId, loadingMsg.message_id);
 
@@ -194,7 +194,7 @@ module.exports = {
         if (loadingMsg) await bot.deleteMessage(chatId, loadingMsg.message_id).catch(() => {});
         return bot.sendMessage(
           chatId,
-          `❌ ফাইল ইনস্টল করতে সমস্যা হয়েছে!\nError: ${err.message}`,
+          `❌ ফাইল ইনস্টল করতে সমস্যা হয়েছে!\nএরর: ${err.message}`,
           { reply_to_message_id: messageId }
         );
       }
@@ -241,7 +241,7 @@ module.exports = {
       if (failedFiles.length > 0) {
         captionText += `⚠️ 𝗦𝗢𝗠𝗢𝗦𝗦𝗔 𝗝𝗨𝗞𝗧𝗢 𝗙𝗜𝗟𝗘:\n`;
         failedFiles.forEach((item, idx) => {
-          captionText += `» ${idx + 1}. ${item.file}\n   ┗ ❌ Error: ${item.error}\n`;
+          captionText += `» ${idx + 1}. ${item.file}\n   ┗ 🔴 Error: ${item.error}\n`;
         });
       } else {
         captionText += `» ✨ সকল কমান্ড ফাইল সফলভাবে লোড হয়েছে!\n`;
@@ -264,7 +264,7 @@ module.exports = {
         }
       });
     } catch (e) {
-      return bot.sendMessage(chatId, `❌ সিস্টেম লোড Error: ${e.message}`, { reply_to_message_id: messageId });
+      return bot.sendMessage(chatId, `❌ সিস্টেম লোড এরর: ${e.message}`, { reply_to_message_id: messageId });
     }
   },
 
@@ -284,9 +284,9 @@ module.exports = {
       unregisterFromBot(bot, fileWithExt);
       registerToBot(bot, cmdModule);
 
-      return bot.sendMessage(chatId, `✅ "${fileWithExt}" রিলোড সম্পন্ন হয়েছে।`, { reply_to_message_id: messageId });
+      return bot.sendMessage(chatId, `✅ "${fileWithExt}" রিলোড এবং বটের সাথে সিঙ্ক সম্পন্ন হয়েছে।`, { reply_to_message_id: messageId });
     } catch (err) {
-      return bot.sendMessage(chatId, `❌ "${fileWithExt}" লোড করতে ব্যর্থ!\n❌ Error: ${err.message}`, { reply_to_message_id: messageId });
+      return bot.sendMessage(chatId, `❌ "${fileWithExt}" লোড করতে ব্যর্থ!\n🔴 এরর: ${err.message}`, { reply_to_message_id: messageId });
     }
   },
 
@@ -301,7 +301,7 @@ module.exports = {
     try {
       delete require.cache[require.resolve(filePath)];
       unregisterFromBot(bot, fileWithExt);
-      return bot.sendMessage(chatId, `✅ "${fileWithExt}" আনলোড করা হয়েছে।`, { reply_to_message_id: messageId });
+      return bot.sendMessage(chatId, `✅ "${fileWithExt}" আনলোড এবং মেমোরি থেকে রিমুভ করা হয়েছে।`, { reply_to_message_id: messageId });
     } catch (err) {
       return bot.sendMessage(chatId, `❌ আনলোড করতে সমস্যা: ${err.message}`, { reply_to_message_id: messageId });
     }
@@ -378,74 +378,6 @@ module.exports = {
 `  𝗢𝗪𝗡𝗘𝗥 𝗦𝗜𝗬𝗔𝗠-𝗛𝗔𝗦𝗔𝗡
 ───────────────
 » 🛠 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗠𝗔𝗡𝗔𝗚𝗘𝗥
-» 🤖 𝗕𝗢𝗧: @${botUsername}
-───────────────
-» ⚙️ /cmd load filename
-» ⚙️ /cmd unload filename
-» ⚙️ /cmd loadall
-» ⚙️ /cmd install filename.js code
-───────────────
-» 👑 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝗦𝗔𝗡 👑`;
-
-      return bot.editMessageText(captionText, {
-        chat_id: chatId,
-        message_id: messageId,
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "🔄 Load All Commands", callback_data: "cmd_loadall" },
-              { text: "📜 Command List", callback_data: "cmd_list" }
-            ],
-            [
-              { text: "➕ 𝐀𝐃𝐃 𝐆𝐑𝐎𝐔𝐏", url: `https://t.me/${botUsername}?startgroup=true` },
-              { text: "👑 𝐎𝐖𝐍𝐄𝐑", url: `https://t.me/${config.ownerUsername || "ri_siyam"}` }
-            ]
-          ]
-        }
-      });
-    }
-  }
-};rd: fileButtons }
-      });
-    }
-
-    if (data.startsWith("cmd_manage_")) {
-      const fileName = data.replace("cmd_manage_", "");
-      const manageButtons = [
-        [
-          { text: "🔄 Reload Command", callback_data: `cmd_reload_${fileName}` },
-          { text: "❌ Unload Command", callback_data: `cmd_unload_${fileName}` }
-        ],
-        [
-          { text: "🔙 Back to List", callback_data: "cmd_list" }
-        ]
-      ];
-
-      return bot.editMessageText(`📁 *Selected File:* \`${fileName}\`\nপ্রয়োজনীয় অপশন বেছে নিন:`, {
-        chat_id: chatId,
-        message_id: messageId,
-        parse_mode: "Markdown",
-        reply_markup: { inline_keyboard: manageButtons }
-      });
-    }
-
-    if (data.startsWith("cmd_reload_")) {
-      const fileName = data.replace("cmd_reload_", "");
-      await bot.answerCallbackQuery(query.id, { text: `Reloading ${fileName}...` });
-      return module.exports.handleLoad(bot, chatId, messageId, fileName);
-    }
-
-    if (data.startsWith("cmd_unload_")) {
-      const fileName = data.replace("cmd_unload_", "");
-      await bot.answerCallbackQuery(query.id, { text: `Unloading ${fileName}...` });
-      return module.exports.handleUnload(bot, chatId, messageId, fileName);
-    }
-
-    if (data === "cmd_main") {
-      const captionText = 
-`  𝗢𝗪𝗡𝗘𝗥 𝗦𝗜𝗬𝗔𝗠-𝗛𝗔𝗦𝗔𝗡
-───────────────
-» 🛠 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗠𝗔𝗡𝗔𝗚𝗘𝗥
 » 🤖 𝗕𝗢𝗧 𝗡𝗔𝗠𝗘: @${botUsername}
 ───────────────
 » ⚙️ /cmd load <filename>
@@ -453,7 +385,7 @@ module.exports = {
 » ⚙️ /cmd loadall
 » ⚙️ /cmd install <filename.js> <code>
 ───────────────
-» 👑 𝗢𝗪𝗡𝗘𝗥: 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝗛𝗔𝗦𝗔𝗡 👑`;
+» 👑 𝗢𝗪𝗡𝗘𝗥: 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑`;
 
       return bot.editMessageText(captionText, {
         chat_id: chatId,
