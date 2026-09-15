@@ -2,6 +2,9 @@ const axios = require("axios");
 
 const baseApiUrl = "https://noobs-api.top/dipto/baby";
 
+// বটের পাঠানো মেসেজের ID ট্র্যাক করার জন্য ইন-মেমোরি স্টেট
+const botMessagesState = new Map();
+
 // র্যান্ডম মেসেজ লিস্ট
 const randomReplies = [
   "𝗵𝗲 𝗯𝗼𝘁 𝗯𝗼𝘁 𝗰𝗵𝗶𝗹𝗹 𝗯𝗿𝗼!",
@@ -42,22 +45,23 @@ module.exports = {
   author: "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍",
   role: 0,
   category: "fun",
-  shortDescription: "Interactive conversational chat bot with reply automation",
+  shortDescription: "Interactive chat bot with flawless reply tracking",
 
-  // ১. সরাসরি /bot বা /bot teach ব্যবহার করলে
+  // ১. /bot বা /bot teach কমান্ড
   execute: async (bot, msg, argsText) => {
     const chatId = msg.chat.id;
     const messageId = msg.message_id;
     const senderId = msg.from.id;
     const firstName = msg.from.first_name || "User";
-    const args = argsText ? argsText.split(" ") : [];
+    const args = argsText ? argsText.trim().split(/\s+/) : [];
 
     try {
-      // শিখানোর কমান্ড: /bot teach ask - reply
+      // শিখানোর কমান্ড
       if (args[0] === "teach") {
-        const [q, a] = args.slice(1).join(" ").split(/\s*-\s*/);
+        const payload = args.slice(1).join(" ");
+        const [q, a] = payload.split(/\s*-\s*/);
         if (!q || !a) {
-          return bot.sendMessage(chatId, "⚠️ Format: teach ask - reply", {
+          return bot.sendMessage(chatId, "⚠️ Format: /bot teach ask - reply", {
             reply_to_message_id: messageId
           });
         }
@@ -66,63 +70,78 @@ module.exports = {
           `${baseApiUrl}?teach=${encodeURIComponent(q)}&reply=${encodeURIComponent(a)}&senderID=${senderId}`
         );
 
-        return bot.sendMessage(chatId, `✅ Added: ${data.message}`, {
+        return bot.sendMessage(chatId, `✅ Added: ${data.message || "Success"}`, {
           reply_to_message_id: messageId
         });
       }
 
-      // সাধারণ /bot কমান্ড দিলে র্যান্ডম মেসেজ পাঠাবে
+      // নরমাল /bot লিখলে র্যান্ডম মেসেজ দিবে এবং মেসেজের আইডি সেভ রাখবে
       const randText = randomReplies[Math.floor(Math.random() * randomReplies.length)];
-      return bot.sendMessage(chatId, `「 ${firstName} 」\n\n${randText}`, {
+      const sentMsg = await bot.sendMessage(chatId, `「 ${firstName} 」\n\n${randText}`, {
         reply_to_message_id: messageId
       });
+
+      if (sentMsg && sentMsg.message_id) {
+        botMessagesState.set(sentMsg.message_id, senderId);
+      }
     } catch (err) {
-      return bot.sendMessage(chatId, "⚠️ API Busy!", {
-        reply_to_message_id: messageId
-      });
+      console.error("Bot Execute Error:", err.message);
+      return bot.sendMessage(chatId, "⚠️ API Busy!", { reply_to_message_id: messageId });
     }
   },
 
-  // ২. চ্যাট লিসেনার (ট্রিগার ও রিপ্লাই হ্যান্ডলিং)
+  // ২. অটো চ্যাট এবং রিপ্লাই লিসেনার
   onChat: async (bot, msg) => {
+    if (!msg || !msg.text) return;
+
     const chatId = msg.chat.id;
     const messageId = msg.message_id;
     const senderId = msg.from.id;
     const firstName = msg.from.first_name || "User";
-    const body = msg.text || "";
+    const body = msg.text.trim();
 
-    if (!body) return;
+    try {
+      // ক) ইউজার যদি বটের পাঠানো কোনো মেসেজে রিপ্লাই করে
+      if (msg.reply_to_message) {
+        const repliedMsgId = msg.reply_to_message.message_id;
 
-    // ক) বটের মেসেজে রিপ্লাই করলে মূল এপিআই থেকে উত্তর আসবে
-    if (msg.reply_to_message && msg.reply_to_message.from.is_bot) {
-      try {
-        const { data } = await axios.get(
-          `${baseApiUrl}?text=${encodeURIComponent(body)}&senderID=${senderId}&font=1`
-        );
+        // চেক করবে মেসেজটি কি আমাদের এই বটেরই ছিল কিনা
+        if (msg.reply_to_message.from && msg.reply_to_message.from.is_bot) {
+          const { data } = await axios.get(
+            `${baseApiUrl}?text=${encodeURIComponent(body)}&senderID=${senderId}&font=1`
+          );
 
-        if (data && data.reply) {
-          return bot.sendMessage(chatId, data.reply, {
-            reply_to_message_id: messageId
-          });
+          if (data && data.reply) {
+            const newSentMsg = await bot.sendMessage(chatId, data.reply, {
+              reply_to_message_id: messageId
+            });
+            
+            // পরবর্তী রিপ্লাইয়ের জন্য নতুন মেসেজ আইডিটি মেমোরিতে আপডেট রাখা
+            if (newSentMsg && newSentMsg.message_id) {
+              botMessagesState.set(newSentMsg.message_id, senderId);
+            }
+          }
+          return;
         }
-      } catch (err) {
-        return; // API Error হলে নীরব থাকবে
       }
-    }
 
-    // খ) মেসেজের শুরুতে ট্রিগার (bot, mbot, milonbot, বট) থাকলে র্যান্ডম মেসেজ দিবে
-    const lowerBody = body.toLowerCase();
-    const isTriggered = ["bot", "mbot", "milonbot", "বট"].some((trigger) =>
-      lowerBody.startsWith(trigger)
-    );
+      // খ) ট্রিগার চেক: bot, mbot, milonbot, বা বট দিয়ে মেসেজ শুরু হলে
+      const lowerBody = body.toLowerCase();
+      const triggers = ["bot", "mbot", "milonbot", "বট"];
+      const isTriggered = triggers.some((trg) => lowerBody === trg || lowerBody.startsWith(trg + " "));
 
-    if (isTriggered) {
-      const randText = randomReplies[Math.floor(Math.random() * randomReplies.length)];
-      const responseText = `「 ${firstName} 」\n\n${randText}`;
+      if (isTriggered) {
+        const randText = randomReplies[Math.floor(Math.random() * randomReplies.length)];
+        const sentMsg = await bot.sendMessage(chatId, `「 ${firstName} 」\n\n${randText}`, {
+          reply_to_message_id: messageId
+        });
 
-      return bot.sendMessage(chatId, responseText, {
-        reply_to_message_id: messageId
-      });
+        if (sentMsg && sentMsg.message_id) {
+          botMessagesState.set(sentMsg.message_id, senderId);
+        }
+      }
+    } catch (err) {
+      console.error("Bot OnChat Error:", err.message);
     }
   }
 };
