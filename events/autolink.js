@@ -48,38 +48,46 @@ module.exports = (bot) => {
                     let videoUrl = null;
                     let title = "Video File";
 
+                    // প্রধান ও নতুন অল-ইন-ওয়ান API তালিকা
                     const downloadApis = [
-                        `https://deliriussapi-official.vercel.app/download/alldown?url=${encodeURIComponent(url)}`,
-                        `https://api.vreden.web.id/api/ytmp4?url=${encodeURIComponent(url)}`,
-                        `https://api.davidcyriltech.my.id/download/ytmp4?url=${encodeURIComponent(url)}`
+                        `https://api.siputzx.my.id/api/d/alldown?url=${encodeURIComponent(url)}`,
+                        `https://widipe.com/download/alldown?url=${encodeURIComponent(url)}`,
+                        `https://api.cynthia.my.id/api/alldownload?url=${encodeURIComponent(url)}`
                     ];
 
                     for (const api of downloadApis) {
                         try {
-                            const res = await axios.get(api, { timeout: 15000 });
+                            const res = await axios.get(api, { timeout: 20000 });
                             const d = res.data;
-                            if (d && d.data && d.data.url) {
-                                videoUrl = d.data.url;
+                            if (d && d.data && (d.data.video || d.data.url || d.data.mp4)) {
+                                videoUrl = d.data.video || d.data.url || d.data.mp4;
                                 if (d.data.title) title = d.data.title;
                                 break;
-                            } else if (d && d.result && d.result.download_url) {
-                                videoUrl = d.result.download_url;
-                                if (d.result.title) title = d.result.title;
-                                break;
-                            } else if (d && d.result && d.result.url) {
-                                videoUrl = d.result.url;
+                            } else if (d && d.result && (d.result.url || d.result.video)) {
+                                videoUrl = d.result.url || d.result.video;
                                 if (d.result.title) title = d.result.title;
                                 break;
                             }
                         } catch (e) {}
                     }
 
+                    // টিকটক এর বিশেষ ব্যাকআপ
                     if (!videoUrl && url.includes("tiktok.com")) {
                         try {
                             const ttRes = await axios.get(`https://tikwm.com/api/?url=${encodeURIComponent(url)}`, { timeout: 10000 });
                             if (ttRes.data && ttRes.data.data && ttRes.data.data.play) {
                                 videoUrl = ttRes.data.data.play;
                                 title = ttRes.data.data.title || title;
+                            }
+                        } catch (e) {}
+                    }
+
+                    // ফেসবুক এর বিশেষ ব্যাকআপ
+                    if (!videoUrl && (url.includes("facebook.com") || url.includes("fb.watch"))) {
+                        try {
+                            const fbRes = await axios.get(`https://api.siputzx.my.id/api/d/facebook?url=${encodeURIComponent(url)}`, { timeout: 15000 });
+                            if (fbRes.data && fbRes.data.data && fbRes.data.data.urls) {
+                                videoUrl = fbRes.data.data.urls[0].hd || fbRes.data.data.urls[0].sd;
                             }
                         } catch (e) {}
                     }
@@ -92,7 +100,7 @@ module.exports = (bot) => {
                     const vidRes = await axios.get(videoUrl, {
                         responseType: "arraybuffer",
                         headers: { "User-Agent": "Mozilla/5.0" },
-                        timeout: 45000
+                        timeout: 60000
                     });
 
                     const videoBuffer = Buffer.from(vidRes.data);
