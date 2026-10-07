@@ -22,7 +22,7 @@ module.exports = {
     const minutes = Math.floor((uptimeSeconds % 3600) / 60);
     const seconds = Math.floor(uptimeSeconds % 60);
 
-    const formattedUptime = `${days} দিন, ${hours} ঘণ্টা, ${minutes} মিনিট, ${seconds} সেকেন্ড`;
+    const formattedUptime = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
     const memoryUsage = process.memoryUsage();
     const heapUsed = (memoryUsage.heapUsed / 1024 / 1024).toFixed(2);
@@ -38,22 +38,31 @@ module.exports = {
     const platform = os.platform().toUpperCase();
     const nodeVersion = process.version;
 
-    const statusText = 
-`┏━━━━━━━━━━━━━━━━┓
- 🤖 𝐒𝐘𝐒𝐓𝐄𝐌 𝐒𝐓𝐀𝐓𝐔𝐒
-┗━━━━━━━━━━━━━━━━┛
- ⏱️ 𝐔𝐩𝐭𝐢𝐦𝐞 : \`${formattedUptime}\`
- 📡 𝐏𝐢𝐧𝐠   : \`${endPing} ms\`
+    // Visual Progress Bar for System RAM Usage
+    const ramPercentage = Math.round((usedMem / totalMem) * 100);
+    const filledBlocks = Math.round(ramPercentage / 10);
+    const ramBar = "█".repeat(filledBlocks) + "░".repeat(10 - filledBlocks);
 
-📊 𝐒𝐞𝐫𝐯𝐞𝐫 𝐃𝐞𝐭𝐚𝐢𝐥𝐬:
- ✦ 𝐏𝐫𝐨𝐜𝐞𝐬𝐬 𝐑𝐀𝐌 : \`${heapUsed} MB / ${heapTotal} MB\`
- ✦ 𝐒𝐲𝐬𝐭𝐞𝐦 𝐑𝐀𝐌  : \`${usedMem} GB / ${totalMem} GB\`
- ✦ 𝐂𝐏𝐔 𝐋𝐨𝐚𝐝   : \`${cpuLoad}%\` (\`${cpuCores} Cores\`)
- ✦ 𝐎𝐒 𝐏𝐥𝐚𝐭𝐟𝐨𝐫𝐦 : \`${platform}\`
- ✦ 𝐍𝐨𝐝𝐞 𝐕𝐞𝐫𝐬𝐢𝐨𝐧: \`${nodeVersion}\`
- ✦ 𝐏𝐈𝐃          : \`${process.pid}\`
-━━━━━━━━━━━━━━━━━
- ✍️ 𝐀𝐮𝐭𝐡𝐨𝐫 : 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍`;
+    const statusText = 
+`╭━━━〔 ⚡ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃 ⚡ 〕━━━╮
+
+  ⚙️ 𝐁𝐎𝐓 𝐏𝐄𝐑𝐅𝐎𝐑𝐌𝐀𝐍𝐂𝐄
+  ▸ ⏳ 𝐔𝐩𝐭𝐢𝐦𝐞  : \`${formattedUptime}\`
+  ▸ 🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲 : \`${endPing} ms\`
+
+  🖥️ 𝐒𝐄𝐑𝐕𝐄𝐑 𝐒𝐏𝐄𝐂𝐒
+  ▸ ⚡ 𝐂𝐏𝐔 𝐋𝐨𝐚𝐝  : \`${cpuLoad}%\` (\`${cpuCores} Cores\`)
+  ▸ 💾 𝐏𝐫𝐨𝐜𝐞𝐬𝐬   : \`${heapUsed} MB / ${heapTotal} MB\`
+  ▸ 🧠 𝐒𝐲𝐬𝐭𝐞𝐦 𝐑𝐀𝐌 : \`${usedMem} GB / ${totalMem} GB\`
+  ▸ 📊 𝐔𝐬𝐚𝐠𝐞  : [${ramBar}] \`${ramPercentage}%\`
+
+  📋 𝐒𝐘𝐒𝐓𝐄𝐌 𝐈𝐍𝐅𝐎
+  ▸ 🐧 𝐎𝐒        : \`${platform}\`
+  ▸ 🟢 𝐍𝐨𝐝𝐞.𝐣𝐬   : \`${nodeVersion}\`
+  ▸ 🆔 𝐏𝐈𝐃        : \`${process.pid}\`
+
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+  👑 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫 : 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍`;
 
     try {
       await bot.sendMessage(chatId, statusText, {
