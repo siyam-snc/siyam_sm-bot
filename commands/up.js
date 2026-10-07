@@ -22,35 +22,40 @@ module.exports = {
     const minutes = Math.floor((uptimeSeconds % 3600) / 60);
     const seconds = Math.floor(uptimeSeconds % 60);
 
-    const formattedUptime = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    const formattedUptime = `${days}d${hours}h ${minutes}m${seconds}s`;
 
     const memoryUsage = process.memoryUsage();
     const heapUsed = (memoryUsage.heapUsed / 1024 / 1024).toFixed(2);
     const heapTotal = (memoryUsage.heapTotal / 1024 / 1024).toFixed(2);
 
-    const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
-    const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
-    const usedMem = (totalMem - freeMem).toFixed(2);
+    // Number হিসেবে হিসাব করে শেষে toFixed করা হয়েছে
+    const totalMemNum = os.totalmem() / (1024 * 1024 * 1024);
+    const freeMemNum = os.freemem() / (1024 * 1024 * 1024);
+    const usedMemNum = totalMemNum - freeMemNum;
+
+    const totalMem = totalMemNum.toFixed(2);
+    const usedMem = usedMemNum.toFixed(2);
 
     const endPing = Date.now() - startPing;
-    const cpuLoad = os.loadavg()[0].toFixed(2);
+    const loadAvg = os.loadavg()[0];
+    const cpuLoad = loadAvg ? loadAvg.toFixed(2) : "0.00";
     const cpuCores = os.cpus().length;
     const platform = os.platform().toUpperCase();
     const nodeVersion = process.version;
 
     // Visual Progress Bar for System RAM Usage
-    const ramPercentage = Math.round((usedMem / totalMem) * 100);
+    const ramPercentage = Math.round((usedMemNum / totalMemNum) * 100);
     const filledBlocks = Math.round(ramPercentage / 10);
     const ramBar = "█".repeat(filledBlocks) + "░".repeat(10 - filledBlocks);
 
     const statusText = 
-` ___⚡ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃 ⚡___
+`___⚡ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃 ⚡___
 
   ⚙️ 𝐁𝐎𝐓 𝐏𝐄𝐑𝐅𝐎𝐑𝐌𝐀𝐍𝐂𝐄
   ▸ ⏳ 𝐔𝐩𝐭𝐢𝐦𝐞  : \`${formattedUptime}\`
   ▸ 🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲 : \`${endPing} ms\`
   __________________________
-  🖥️ 𝐒𝐄𝐑𝐕𝐄𝐑 𝐒𝐏𝐄𝐂𝐒
+  🖥️ 𝐒𝐄𝐑𝐕𝐄 𝐒𝐏𝐄𝐂𝐒
   ▸ ⚡ 𝐂𝐏𝐔 𝐋𝐨𝐚𝐝  : \`${cpuLoad}%\` (\`${cpuCores} Cores\`)
   ▸ 💾 𝐏𝐫𝐨𝐜𝐞𝐬𝐬   : 
   ▸ 💾 \`${heapUsed} MB / ${heapTotal} MB\`
