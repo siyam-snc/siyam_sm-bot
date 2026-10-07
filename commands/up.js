@@ -44,24 +44,25 @@ module.exports = {
     const ramBar = "█".repeat(filledBlocks) + "░".repeat(10 - filledBlocks);
 
     const statusText = 
-`╭━━━〔 ⚡ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃 ⚡ 〕━━━╮
+` ___⚡ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃 ⚡___
 
   ⚙️ 𝐁𝐎𝐓 𝐏𝐄𝐑𝐅𝐎𝐑𝐌𝐀𝐍𝐂𝐄
   ▸ ⏳ 𝐔𝐩𝐭𝐢𝐦𝐞  : \`${formattedUptime}\`
   ▸ 🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲 : \`${endPing} ms\`
-
+  __________________________
   🖥️ 𝐒𝐄𝐑𝐕𝐄𝐑 𝐒𝐏𝐄𝐂𝐒
   ▸ ⚡ 𝐂𝐏𝐔 𝐋𝐨𝐚𝐝  : \`${cpuLoad}%\` (\`${cpuCores} Cores\`)
-  ▸ 💾 𝐏𝐫𝐨𝐜𝐞𝐬𝐬   : \`${heapUsed} MB / ${heapTotal} MB\`
-  ▸ 🧠 𝐒𝐲𝐬𝐭𝐞𝐦 𝐑𝐀𝐌 : \`${usedMem} GB / ${totalMem} GB\`
+  ▸ 💾 𝐏𝐫𝐨𝐜𝐞𝐬𝐬   : 
+  ▸ 💾 \`${heapUsed} MB / ${heapTotal} MB\`
+  ▸ 🧠 𝐒𝐲𝐬𝐭𝐞𝐦 𝐑𝐀𝐌 : 
+  ▸ 🧠 \`${usedMem} GB / ${totalMem} GB\`
   ▸ 📊 𝐔𝐬𝐚𝐠𝐞  : [${ramBar}] \`${ramPercentage}%\`
-
+  __________________________
   📋 𝐒𝐘𝐒𝐓𝐄𝐌 𝐈𝐍𝐅𝐎
   ▸ 🐧 𝐎𝐒        : \`${platform}\`
   ▸ 🟢 𝐍𝐨𝐝𝐞.𝐣𝐬   : \`${nodeVersion}\`
   ▸ 🆔 𝐏𝐈𝐃        : \`${process.pid}\`
-
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+  ___________________________
   👑 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫 : 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍`;
 
     try {
