@@ -35,7 +35,9 @@ module.exports = {
         }
 
         const targetID = String(targetUser.id);
-        const userName = (targetUser.first_name + " " + (targetUser.last_name || "")).trim();
+        const rawName = (targetUser.first_name + " " + (targetUser.last_name || "")).trim();
+        // কোনো স্কয়ার বক্স যেন না আসে তাই শুধুমাত্র ইংরেজি অক্ষর বা সেফ ক্যারেক্টার ফিল্টার করা হলো
+        const userName = rawName.replace(/[^\x00-0x7F]/g, "").trim() || "Telegram User";
 
         try {
             const width = 820;
@@ -101,7 +103,7 @@ module.exports = {
                 ctx.font = "bold 42px Arial";
                 ctx.fillStyle = "#f9a8d4";
                 ctx.textAlign = "center";
-                ctx.fillText(userName.charAt(0) || "?", avatarX + avatarSize / 2, avatarY + avatarSize / 2 + 16);
+                ctx.fillText(userName.charAt(0) || "U", avatarX + avatarSize / 2, avatarY + avatarSize / 2 + 16);
             }
             ctx.restore();
 
