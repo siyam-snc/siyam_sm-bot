@@ -1,82 +1,208 @@
+const { createCanvas } = require("canvas");
+const fs = require("fs-extra");
+const path = require("path");
 const os = require("os");
 
+const LOCKED_AUTHOR = "SIYAM-HASAN";
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
 module.exports = {
-  name: "up",
-  aliases: ["uptime", "status", "আপ", "system"],
-  version: "2.5.0",
-  author: "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍",
-  role: 0, 
-  category: "system",
-  shortDescription: "Shows bot uptime and system specs",
-  longDescription: "Displays bot running time, ping, system RAM, CPU usage, and server details.",
-  guide: "{pn}",
+    name: "uptime",
+    aliases: ["up", "status"],
+    version: "6.0",
+    author: LOCKED_AUTHOR,
+    role: 0,
+    category: "system",
+    shortDescription: "Advanced real-time status card with detailed system info",
 
-  execute: async (bot, msg, args) => {
-    const chatId = msg.chat.id;
-    const messageId = msg.message_id;
-    const startPing = Date.now();
+    execute: async (bot, msg) => {
+        const chatId = msg.chat.id;
+        const messageId = msg.message_id;
+        const start = Date.now();
 
-    const uptimeSeconds = process.uptime();
-    const days = Math.floor(uptimeSeconds / 86400);
-    const hours = Math.floor((uptimeSeconds % 86400) / 3600);
-    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-    const seconds = Math.floor(uptimeSeconds % 60);
+        try {
+            const uptime = process.uptime();
+            const days = Math.floor(uptime / 86400);
+            const hours = Math.floor((uptime % 86400) / 3600);
+            const minutes = Math.floor((uptime % 3600) / 60);
+            const seconds = Math.floor(uptime % 60);
 
-    const formattedUptime = `${days}d${hours}h ${minutes}m${seconds}s`;
+            const memory = process.memoryUsage();
+            const usedRAM = (memory.heapUsed / 1024 / 1024).toFixed(1);
+            const totalHeap = (memory.heapTotal / 1024 / 1024).toFixed(1);
+            const ping = Date.now() - start;
 
-    const memoryUsage = process.memoryUsage();
-    const heapUsed = (memoryUsage.heapUsed / 1024 / 1024).toFixed(2);
-    const heapTotal = (memoryUsage.heapTotal / 1024 / 1024).toFixed(2);
+            const cpuLoad = os.loadavg()[0].toFixed(2);
+            const cpuCores = os.cpus().length;
+            const totalMemGB = (os.totalmem() / 1024 / 1024 / 1024).toFixed(1);
+            const freeMemGB = (os.freemem() / 1024 / 1024 / 1024).toFixed(1);
+            const usedMemGB = (totalMemGB - freeMemGB).toFixed(1);
+            const memPercent = ((1 - os.freemem() / os.totalmem()) * 100).toFixed(1);
+            const heapPercent = Math.min(100, ((memory.heapUsed / memory.heapTotal) * 100)).toFixed(1);
 
-    // Number হিসেবে হিসাব করে শেষে toFixed করা হয়েছে
-    const totalMemNum = os.totalmem() / (1024 * 1024 * 1024);
-    const freeMemNum = os.freemem() / (1024 * 1024 * 1024);
-    const usedMemNum = totalMemNum - freeMemNum;
+            const platform = os.platform();
+            const arch = os.arch();
+            const hostname = os.hostname();
+            const nodeVersion = process.version;
+            const pid = process.pid;
 
-    const totalMem = totalMemNum.toFixed(2);
-    const usedMem = usedMemNum.toFixed(2);
+            const width = 980;
+            const height = 640;
+            const canvas = createCanvas(width, height);
+            const ctx = canvas.getContext("2d");
 
-    const endPing = Date.now() - startPing;
-    const loadAvg = os.loadavg()[0];
-    const cpuLoad = loadAvg ? loadAvg.toFixed(2) : "0.00";
-    const cpuCores = os.cpus().length;
-    const platform = os.platform().toUpperCase();
-    const nodeVersion = process.version;
+            // Background
+            const bg = ctx.createLinearGradient(0, 0, width, height);
+            bg.addColorStop(0, "#05050c");
+            bg.addColorStop(0.5, "#0b0b16");
+            bg.addColorStop(1, "#070710");
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, width, height);
 
-    // Visual Progress Bar for System RAM Usage
-    const ramPercentage = Math.round((usedMemNum / totalMemNum) * 100);
-    const filledBlocks = Math.round(ramPercentage / 10);
-    const ramBar = "█".repeat(filledBlocks) + "░".repeat(10 - filledBlocks);
+            // Card
+            ctx.save();
+            ctx.shadowColor = "rgba(139, 92, 246, 0.35)";
+            ctx.shadowBlur = 30;
+            roundRect(ctx, 35, 35, 910, 570, 28);
+            ctx.fillStyle = "rgba(12, 12, 24, 0.96)";
+            ctx.fill();
+            ctx.restore();
 
-    const statusText = 
-`___⚡ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃 ⚡___
+            ctx.strokeStyle = "rgba(167, 139, 250, 0.4)";
+            ctx.lineWidth = 2.5;
+            roundRect(ctx, 35, 35, 910, 570, 28);
+            ctx.stroke();
 
-  ⚙️ 𝐁𝐎𝐓 𝐏𝐄𝐑𝐅𝐎𝐑𝐌𝐀𝐍𝐂𝐄
-  ▸ ⏳ 𝐔𝐩𝐭𝐢𝐦𝐞  : \`${formattedUptime}\`
-  ▸ 🚀 𝐋𝐚𝐭𝐞𝐧𝐜𝐲 : \`${endPing} ms\`
-  __________________________
-  🖥️ 𝐒𝐄𝐑𝐕𝐄 𝐒𝐏𝐄𝐂𝐒
-  ▸ ⚡ 𝐂𝐏𝐔 𝐋𝐨𝐚𝐝  : \`${cpuLoad}%\` (\`${cpuCores} Cores\`)
-  ▸ 💾 𝐏𝐫𝐨𝐜𝐞𝐬𝐬   : 
-  ▸ 💾 \`${heapUsed} MB / ${heapTotal} MB\`
-  ▸ 🧠 𝐒𝐲𝐬𝐭𝐞𝐦 𝐑𝐀𝐌 : 
-  ▸ 🧠 \`${usedMem} GB / ${totalMem} GB\`
-  ▸ 📊 𝐔𝐬𝐚𝐠𝐞  : [${ramBar}] \`${ramPercentage}%\`
-  __________________________
-  📋 𝐒𝐘𝐒𝐓𝐄𝐌 𝐈𝐍𝐅𝐎
-  ▸ 🐧 𝐎𝐒        : \`${platform}\`
-  ▸ 🟢 𝐍𝐨𝐝𝐞.𝐣𝐬   : \`${nodeVersion}\`
-  ▸ 🆔 𝐏𝐈𝐃        : \`${process.pid}\`
-  ___________________________
-  👑 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫 : 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍`;
+            // Header
+            const headerGrad = ctx.createLinearGradient(55, 55, 925, 55);
+            headerGrad.addColorStop(0, "#7c3aed");
+            headerGrad.addColorStop(1, "#06b6d4");
+            ctx.fillStyle = headerGrad;
+            roundRect(ctx, 55, 55, 870, 68, 16);
+            ctx.fill();
 
-    try {
-      await bot.sendMessage(chatId, statusText, {
-        parse_mode: "Markdown",
-        reply_to_message_id: messageId
-      });
-    } catch (err) {
-      console.error("Uptime Command Error:", err.message);
+            ctx.font = "bold 30px Arial";
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "center";
+            ctx.fillText("SIYAM-HASAN • BOT STATUS", 490, 98);
+
+            // Uptime Section
+            ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+            roundRect(ctx, 60, 145, 860, 90, 14);
+            ctx.fill();
+            ctx.fillStyle = "#a78bfa";
+            ctx.fillRect(60, 145, 860, 5);
+
+            ctx.font = "bold 16px Arial";
+            ctx.fillStyle = "#c4b5fd";
+            ctx.fillText("BOT UPTIME", 490, 175);
+
+            ctx.font = "bold 34px Arial";
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(`${days}d${hours}h   ${minutes}m${seconds}s`, 490, 215);
+
+            // Info Boxes
+            const boxes = [
+                { title: "PING", value: `${ping} ms`, x: 60, color: "#34d399" },
+                { title: "PROCESS RAM", value: `${usedRAM} MB`, x: 280, color: "#fbbf24" },
+                { title: "CPU LOAD", value: cpuLoad, x: 500, color: "#22d3ee" },
+                { title: "CPU CORES", value: `${cpuCores}`, x: 720, color: "#a78bfa" }
+            ];
+
+            boxes.forEach((box) => {
+                const y = 255;
+                ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+                roundRect(ctx, box.x, y, 200, 85, 12);
+                ctx.fill();
+
+                ctx.fillStyle = box.color;
+                ctx.fillRect(box.x, y, 200, 4);
+
+                ctx.font = "bold 13px Arial";
+                ctx.fillStyle = "#a5b4fc";
+                ctx.textAlign = "center";
+                ctx.fillText(box.title, box.x + 100, y + 32);
+
+                ctx.font = "bold 22px Arial";
+                ctx.fillStyle = "#ffffff";
+                ctx.fillText(box.value, box.x + 100, y + 62);
+            });
+
+            // Progress Bars
+            ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+            roundRect(ctx, 60, 360, 860, 100, 12);
+            ctx.fill();
+
+            ctx.font = "bold 14px Arial";
+            ctx.fillStyle = "#a5b4fc";
+            ctx.textAlign = "left";
+            ctx.fillText(`Process RAM  ${heapPercent}%`, 85, 395);
+
+            ctx.fillStyle = "rgba(50, 50, 80, 1)";
+            roundRect(ctx, 85, 410, 380, 14, 7);
+            ctx.fill();
+            ctx.fillStyle = "#fbbf24";
+            roundRect(ctx, 85, 410, 380 * (heapPercent / 100), 14, 7);
+            ctx.fill();
+
+            ctx.fillStyle = "#a5b4fc";
+            ctx.fillText(`System RAM  ${memPercent}%`, 500, 395);
+
+            ctx.fillStyle = "rgba(50, 50, 80, 1)";
+            roundRect(ctx, 500, 410, 380, 14, 7);
+            ctx.fill();
+            ctx.fillStyle = "#22d3ee";
+            roundRect(ctx, 500, 410, 380 * (memPercent / 100), 14, 7);
+            ctx.fill();
+
+            // Bottom Info
+            ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+            roundRect(ctx, 60, 480, 860, 95, 12);
+            ctx.fill();
+
+            ctx.font = "bold 14px Arial";
+            ctx.fillStyle = "#a5b4fc";
+            ctx.fillText("Node.js", 85, 515);
+            ctx.fillText("Platform", 85, 550);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(nodeVersion, 170, 515);
+            ctx.fillText(platform.toUpperCase(), 170, 550);
+
+            ctx.textAlign = "right";
+            ctx.font = "bold 14px Arial";
+            ctx.fillStyle = "#c4b5fd";
+            ctx.fillText("NIJHUM CHATBOT", 890, 530);
+
+            const cachePath = path.join(__dirname, "..", "cache");
+            await fs.ensureDir(cachePath);
+            const filePath = path.join(cachePath, `status_${Date.now()}.png`);
+            await fs.writeFile(filePath, canvas.toBuffer("image/png"));
+
+            await bot.sendPhoto(chatId, fs.createReadStream(filePath), {
+                caption: "⚡ **BOT STATUS CARD**",
+                parse_mode: "Markdown",
+                reply_to_message_id: messageId
+            });
+
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+        } catch (err) {
+            console.error(err);
+            bot.sendMessage(chatId, "⚠️ Status card generate করতে সমস্যা হয়েছে।", { reply_to_message_id: messageId });
+        }
     }
-  }
 };
