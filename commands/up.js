@@ -57,7 +57,6 @@ module.exports = {
             const arch = os.arch();
             const hostname = os.hostname();
             const nodeVersion = process.version;
-            const pid = process.pid;
 
             const width = 980;
             const height = 640;
