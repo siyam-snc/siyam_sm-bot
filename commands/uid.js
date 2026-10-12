@@ -1,7 +1,6 @@
-// UID Command - SIYAM-HASAN
-
 const toBold = (text) => {
     const normal = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
     const bold = [
         ..."𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭",
         ..."𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇"
@@ -15,7 +14,7 @@ const toBold = (text) => {
 
 module.exports = {
     name: "uid",
-    aliases: ["id", "myid", "userid"],
+    aliases: ["id"],
     version: "6.0",
     author: "SIYAM-HASAN",
     role: 0,
@@ -28,7 +27,7 @@ module.exports = {
 
         let targetUser = msg.from;
 
-        if (msg.reply_to_message && msg.reply_to_message.from) {
+        if (msg.reply_to_message?.from) {
             targetUser = msg.reply_to_message.from;
         }
 
@@ -36,20 +35,21 @@ module.exports = {
         const firstName = targetUser.first_name || "N/A";
         const lastName = targetUser.last_name || "";
         const fullName = `${firstName} ${lastName}`.trim();
+
         const username = targetUser.username
             ? `@${targetUser.username}`
             : "No Username";
 
         const uidText =
-`╭━❮ ${toBold("USER INFORMATION")} ❯━╮
+`╭━❮ ${toBold("INFORMATION")} ❯━╮
 ┃
 ┣ 👤 ${toBold("NAME")}: ${toBold(fullName)}
 ┣ 🔗 ${toBold("USERNAME")}: ${toBold(username)}
 ┣ 🆔 ${toBold("USER ID")}: ${targetID}
 ┃
-┣ 👑 ${toBold("SYSTEM OWNER")}: ${toBold("SIYAM HASAN")}
-┣ 🤖 ${toBold("BOT")}: ${toBold("NIJHUM CHATBOT")}
-╰━═━═━═━═━═━═━═━═━═━╯`;
+┣ 👑 ${toBold("OWNER")}: ${toBold("SIYAM HASAN")}
+┣ 🤖 ${toBold("NIJHUM CHATBOT")}
+╰━═━═━═━═━═━═━═━═━╯`;
 
         await bot.sendMessage(chatId, uidText, {
             reply_to_message_id: messageId,
@@ -57,7 +57,7 @@ module.exports = {
                 inline_keyboard: [
                     [
                         {
-                            text: "📋 COPY ID",
+                            text: "📋 𝗖𝗢𝗣𝗬 𝗜𝗗",
                             copy_text: {
                                 text: targetID
                             }
