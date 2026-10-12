@@ -86,7 +86,7 @@ module.exports = {
             const ping = Date.now() - pingStart;
 
             const statusText =
-`╭❮ ${toBold("SIYAM-HASAN • BOT STATUS")} ❯╮
+`╭❮ ${toBold("SIYAM•BOT STATUS")} ❯╮
 ┃
 ┣ ⏱️ ${toBold("UPTIME")}: ${toBold(`${days}D ${hours}H ${minutes}M ${seconds}S`)}
 ┣ ⚡ ${toBold("PING")}: ${toBold(`${ping} MS`)}
