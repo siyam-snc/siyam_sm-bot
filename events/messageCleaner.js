@@ -15,7 +15,7 @@ module.exports = (bot) => {
                 }
 
                 const messageId = msg.message_id;
-                await bot.sendMessage(chatId, `🔄 𝐑𝐄𝐌𝐎𝐕𝐈𝐍𝐆 𝐀𝐋𝐋 𝐌𝐄𝐒𝐒𝐀𝐆𝐄𝚂... 𝐏𝐋𝐄𝐀𝐒𝐄 𝐖𝐀𝐈𝐓.`, {
+                await bot.sendMessage(chatId, `🔄`, {
                     reply_to_message_id: messageId
                 });
 
@@ -32,7 +32,7 @@ module.exports = (bot) => {
             }
 
             if (msg.reply_to_message) {
-                const triggerWords = ["সিয়াম", "ডিলেট করো", "ডিলিট করো", "ডিলিট কর", "ডিলেট কর", "বট ডিলিট কর", "রিমুভ", "স"];
+                const triggerWords = ["ডিলেট করো", "ডিলিট করো", "ডিলিট কর", "ডিলেট কর", "বট ডিলিট কর", "রিমুভ", "s"];
                 const isTrigger = triggerWords.some(word => text.includes(word));
 
                 if (isTrigger) {
