@@ -2,14 +2,19 @@ const os = require("os");
 
 const LOCKED_AUTHOR = "SIYAM-HASAN";
 
-// Convert English text to Bold Unicode Font
+// Convert English text to Bold Unicode correctly
 const toBold = (text) => {
     const normal = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    const bold = "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇";
 
-    return String(text).replace(/[A-Za-z]/g, char => {
-        return bold[normal.indexOf(char)];
-    });
+    const bold = [
+        ..."𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭",
+        ..."𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇"
+    ];
+
+    return [...String(text)].map(char => {
+        const index = normal.indexOf(char);
+        return index === -1 ? char : bold[index];
+    }).join("");
 };
 
 module.exports = {
@@ -24,7 +29,6 @@ module.exports = {
     execute: async (bot, msg) => {
         const chatId = msg.chat.id;
         const messageId = msg.message_id;
-        const start = Date.now();
 
         try {
             const uptime = process.uptime();
@@ -35,10 +39,17 @@ module.exports = {
             const seconds = Math.floor(uptime % 60);
 
             const memory = process.memoryUsage();
-            const usedRAM = (memory.heapUsed / 1024 / 1024).toFixed(1);
-            const totalHeap = (memory.heapTotal / 1024 / 1024).toFixed(1);
 
-            const ping = Date.now() - start;
+            const usedRAM = (
+                memory.heapUsed / 1024 / 1024
+            ).toFixed(1);
+
+            const totalHeap = (
+                memory.heapTotal / 1024 / 1024
+            ).toFixed(1);
+
+            const pingStart = Date.now();
+
             const cpuLoad = os.loadavg()[0].toFixed(2);
             const cpuCores = os.cpus().length;
 
@@ -57,6 +68,8 @@ module.exports = {
             const platform = os.platform().toUpperCase();
             const arch = os.arch().toUpperCase();
             const nodeVersion = process.version;
+
+            const ping = Date.now() - pingStart;
 
             const statusText =
 `╭━❮ ${toBold("SIYAM-HASAN • BOT STATUS")} ❯━╮
@@ -79,7 +92,7 @@ module.exports = {
             });
 
         } catch (err) {
-            console.error(err);
+            console.error("Uptime command error:", err);
 
             await bot.sendMessage(
                 chatId,
