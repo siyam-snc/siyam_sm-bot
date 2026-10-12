@@ -1,107 +1,177 @@
 const axios = require('axios');
+const baseApiUrl = async () => {
+    return "https://noobs-api.top/dipto";
+};
 
-const baseApiUrl = "https://noobs-api.top/dipto/baby";
-
-async function handleCommand(bot, msg, args) {
-  if (!bot || !msg) return;
-  const chatId = msg.chat ? msg.chat.id : (msg.threadID || (msg.from ? msg.from.id : null));
-  const messageId = msg.message_id || msg.messageID;
-  const uid = msg.from ? msg.from.id : chatId;
-  const input = (args && args.length > 0) ? args.join(" ").toLowerCase() : "";
-
-  try {
-    if (!input) {
-      const ran = ["Bolo baby", "নিঝুম", "type help baby", "type /bby hi"];
-      const randomText = ran[Math.floor(Math.random() * ran.length)];
-      return bot.sendMessage(chatId, randomText, { reply_to_message_id: messageId });
-    }
-
-    if (input.startsWith("remove")) {
-      const fina = input.replace("remove", "").trim();
-      const res = await axios.get(`${baseApiUrl}?remove=${encodeURIComponent(fina)}&senderID=${uid}`);
-      return bot.sendMessage(chatId, res.data.message || "Removed!", { reply_to_message_id: messageId });
-    }
-
-    if (input.startsWith("rm") && input.includes('-')) {
-      const [fi, f] = input.replace("rm", "").trim().split(/\s*-\s*/);
-      const res = await axios.get(`${baseApiUrl}?remove=${encodeURIComponent(fi)}&index=${f}`);
-      return bot.sendMessage(chatId, res.data.message || "Removed!", { reply_to_message_id: messageId });
-    }
-
-    if (input.startsWith("list")) {
-      const res = await axios.get(`${baseApiUrl}?list=all`);
-      return bot.sendMessage(chatId, `❇️ Total Teach = ${res.data.length || 0}`, { reply_to_message_id: messageId });
-    }
-
-    if (input.startsWith("teach")) {
-      if (input.startsWith("teach react")) {
-        const content = input.replace("teach react", "").trim();
-        const [text1, text2] = content.split(/\s*-\s*/);
-        if (!text1 || !text2) {
-          return bot.sendMessage(chatId, '❌ Format: /bby teach react [Message] - [react1], [react2]', { reply_to_message_id: messageId });
-        }
-        const res = await axios.get(`${baseApiUrl}?teach=${encodeURIComponent(text1)}&react=${encodeURIComponent(text2)}&senderID=${uid}`);
-        return bot.sendMessage(chatId, res.data.message || "Taught successfully!", { reply_to_message_id: messageId });
-      } else {
-        const content = input.replace("teach", "").trim();
-        const [text1, text2] = content.split(/\s*-\s*/);
-        if (!text1 || !text2) {
-          return bot.sendMessage(chatId, '❌ Format: /bby teach [Message] - [Reply1], [Reply2]', { reply_to_message_id: messageId });
-        }
-        const res = await axios.get(`${baseApiUrl}?teach=${encodeURIComponent(text1)}&reply=${encodeURIComponent(text2)}&senderID=${uid}`);
-        return bot.sendMessage(chatId, res.data.message || "Taught successfully!", { reply_to_message_id: messageId });
-      }
-    }
-
-    const res = await axios.get(`${baseApiUrl}?text=${encodeURIComponent(input)}&senderID=${uid}`);
-    const replyText = res.data.reply || res.data.message || "আমি বুঝতে পারিনি সিয়াম ভাই!";
-    return bot.sendMessage(chatId, replyText, { reply_to_message_id: messageId });
-
-  } catch (err) {
-    console.error("BBY Error:", err.message);
-    return bot.sendMessage(chatId, "❌ সিয়াম ভাই, এপিআই সাড়া দিচ্ছে না!", { reply_to_message_id: messageId });
-  }
-}
-
-function parseParams(a, b, c) {
-  let bot, msg, args;
-  if (a && (a.bot || a.api)) {
-    bot = a.bot || a.api;
-    msg = a.msg || a.message || a.event;
-    args = a.args || [];
-  } else {
-    bot = a;
-    msg = b;
-    args = c || [];
-  }
-  return { bot, msg, args };
+function toBold(str) {
+    if (!str) return "";
+    const boldMap = {
+        'A': '𝗔', 'B': '𝗕', 'C': '𝗖', 'D': '𝗗', 'E': '𝗘', 'F': '𝗙', 'G': '𝗚', 'H': '𝗛', 'I': '𝗜', 'J': '𝗝',
+        'K': '𝗞', 'L': '𝗟', 'M': '𝗠', 'N': '𝗡', 'O': '𝗢', 'P': '𝗣', 'Q': '𝗤', 'R': '𝗥', 'S': '𝗦', 'T': '𝗧',
+        'U': '𝗨', 'V': '𝗩', 'W': '𝗪', 'X': '𝗫', 'Y': '𝗬', 'Z': '𝗭',
+        'a': '𝗮', 'b': '𝗯', 'c': '𝗰', 'd': '𝗱', 'e': '𝗲', 'f': '𝗳', 'g': '𝗴', 'h': '𝗵', 'i': '𝗶', 'j': '𝗷',
+        'k': '𝗸', 'l': '𝗹', 'm': '𝗺', 'n': '𝗻', 'o': '𝗼', 'p': '𝗽', 'q': '𝗾', 'r': '𝗿', 's': '𝘀', 't': '𝘁',
+        'u': '𝘂', 'v': '𝘃', 'w': '𝘄', 'x': '𝘅', 'y': '𝘆', 'z': '𝘇',
+        '0': '𝟬', '1': '𝟭', '2': '𝟮', '3': '𝟯', '4': '𝟰', '5': '𝟱', '6': '𝟲', '7': '𝟩', '8': '𝟴', '9': '𝟵'
+    };
+    return str.split('').map(c => boldMap[c] || c).join('');
 }
 
 module.exports = {
-  config: {
-    name: "bby",
-    aliases: ["baby", "bbe", "babe", "sam"],
+    name: "baby",
+    aliases: ["bay", "bbe", "babe", "sam"],
     version: "6.9.0",
     author: "dipto",
     role: 0,
     category: "chat",
-    description: "better then all sim simi"
-  },
-  name: "bby",
-  aliases: ["baby", "bbe", "babe", "sam"],
+    shortDescription: "better then all sim simi",
 
-  execute: async function (a, b, c) {
-    const { bot, msg, args } = parseParams(a, b, c);
-    return handleCommand(bot, msg, args);
-  },
+    execute: async (bot, msg, args) => {
+        const link = `${await baseApiUrl()}/baby`;
+        const dipto = args.join(" ").toLowerCase();
+        const uid = String(msg.from.id);
+        const chatId = msg.chat.id;
+        const messageId = msg.message_id;
+        let command, comd, final;
 
-  onStart: async function (a, b, c) {
-    const { bot, msg, args } = parseParams(a, b, c);
-    return handleCommand(bot, msg, args);
-  },
+        try {
+            if (!args[0]) {
+                const ran = ["Bolo baby", "নিঝুম", "type help baby", "type /baby hi"];
+                return bot.sendMessage(chatId, toBold(ran[Math.floor(Math.random() * ran.length)]), { reply_to_message_id: messageId });
+            }
 
-  run: async function (a, b, c) {
-    const { bot, msg, args } = parseParams(a, b, c);
-    return handleCommand(bot, msg, args);
-  }
+            if (args[0] === 'remove') {
+                const fina = dipto.replace("remove ", "");
+                const res = await axios.get(`${link}?remove=${fina}&senderID=${uid}`);
+                return bot.sendMessage(chatId, toBold(res.data.message || "Done"), { reply_to_message_id: messageId });
+            }
+
+            if (args[0] === 'rm' && dipto.includes('-')) {
+                const [fi, f] = dipto.replace("rm ", "").split(/\s*-\s*/);
+                const res = await axios.get(`${link}?remove=${fi}&index=${f}`);
+                return bot.sendMessage(chatId, toBold(res.data.message || "Done"), { reply_to_message_id: messageId });
+            }
+
+            if (args[0] === 'list') {
+                if (args[1] === 'all') {
+                    const data = (await axios.get(`${link}?list=all`)).data;
+                    return bot.sendMessage(chatId, toBold(`Total Teach = ${data.length || 0}`), { reply_to_message_id: messageId });
+                } else {
+                    const d = (await axios.get(`${link}?list=all`)).data;
+                    return bot.sendMessage(chatId, toBold(`Total Teach = ${d.length || "api off"}\nTotal Response = ${d.responseLength || "api off"}`), { reply_to_message_id: messageId });
+                }
+            }
+
+            if (args[0] === 'msg') {
+                const fuk = dipto.replace("msg ", "");
+                const d = (await axios.get(`${link}?list=${fuk}`)).data.data;
+                return bot.sendMessage(chatId, toBold(`Message ${fuk} = ${d}`), { reply_to_message_id: messageId });
+            }
+
+            if (args[0] === 'edit') {
+                const commandText = dipto.split(/\s*-\s*/)[1];
+                if (!commandText || commandText.length < 2) return bot.sendMessage(chatId, toBold('Invalid format! Use edit [YourMessage] - [NewReply]'), { reply_to_message_id: messageId });
+                const res = await axios.get(`${link}?edit=${args[1]}&replace=${commandText}&senderID=${uid}`);
+                return bot.sendMessage(chatId, toBold(`Changed ${res.data.message || ""}`), { reply_to_message_id: messageId });
+            }
+
+            if (args[0] === 'teach' && args[1] !== 'amar' && args[1] !== 'react') {
+                [comd, command] = dipto.split(/\s*-\s*/);
+                final = comd.replace("teach ", "");
+                if (!command || command.length < 2) return bot.sendMessage(chatId, toBold('Invalid format!'), { reply_to_message_id: messageId });
+                const re = await axios.get(`${link}?teach=${final}&reply=${command}&senderID=${uid}&threadID=${chatId}`);
+                const tex = re.data.message;
+                return bot.sendMessage(chatId, toBold(`Replies added ${tex}\nTeachs: ${re.data.teachs}`), { reply_to_message_id: messageId });
+            }
+
+            if (args[0] === 'teach' && args[1] === 'amar') {
+                [comd, command] = dipto.split(/\s*-\s*/);
+                final = comd.replace("teach ", "");
+                if (!command || command.length < 2) return bot.sendMessage(chatId, toBold('Invalid format!'), { reply_to_message_id: messageId });
+                const res = await axios.get(`${link}?teach=${final}&senderID=${uid}&reply=${command}&key=intro`);
+                return bot.sendMessage(chatId, toBold(`Replies added ${res.data.message || ""}`), { reply_to_message_id: messageId });
+            }
+
+            if (args[0] === 'teach' && args[1] === 'react') {
+                [comd, command] = dipto.split(/\s*-\s*/);
+                final = comd.replace("teach react ", "");
+                if (!command || command.length < 2) return bot.sendMessage(chatId, toBold('Invalid format!'), { reply_to_message_id: messageId });
+                const res = await axios.get(`${link}?teach=${final}&react=${command}`);
+                return bot.sendMessage(chatId, toBold(`Replies added ${res.data.message || ""}`), { reply_to_message_id: messageId });
+            }
+
+            if (dipto.includes('amar name ki') || dipto.includes('amr nam ki') || dipto.includes('whats my name')) {
+                const data = (await axios.get(`${link}?text=amar name ki&senderID=${uid}&key=intro`)).data.reply;
+                return bot.sendMessage(chatId, toBold(data), { reply_to_message_id: messageId });
+            }
+
+            const d = (await axios.get(`${link}?text=${encodeURIComponent(dipto)}&senderID=${uid}&font=1`)).data.reply;
+            const sentMsg = await bot.sendMessage(chatId, toBold(d), { reply_to_message_id: messageId });
+            
+            if (global.activeReplies) {
+                global.activeReplies.set(sentMsg.message_id, {
+                    commandName: "baby",
+                    author: uid
+                });
+            }
+
+        } catch (e) {
+            console.log(e);
+            bot.sendMessage(chatId, toBold("Error occurred."), { reply_to_message_id: messageId });
+        }
+    },
+
+    onReply: async ({ bot, msg, Reply }) => {
+        if (!msg || !msg.text) return;
+        try {
+            const uid = String(msg.from.id);
+            const chatId = msg.chat.id;
+            const text = encodeURIComponent(msg.text.toLowerCase());
+            const a = (await axios.get(`${await baseApiUrl()}/baby?text=${text}&senderID=${uid}&font=1`)).data.reply;
+            
+            const sentMsg = await bot.sendMessage(chatId, toBold(a), { reply_to_message_id: msg.message_id });
+            if (global.activeReplies) {
+                global.activeReplies.set(sentMsg.message_id, {
+                    commandName: "baby",
+                    author: uid
+                });
+            }
+        } catch (err) {}
+    },
+
+    onChat: async ({ bot, msg }) => {
+        try {
+            if (!msg || !msg.text) return;
+            const body = msg.text.toLowerCase();
+            const chatId = msg.chat.id;
+            const uid = String(msg.from.id);
+
+            if (body.startsWith("baby") || body.startsWith("bby") || body.startsWith("hi") || body.startsWith("jan") || body.startsWith("বট") || body.startsWith("janu")) {
+                const arr = body.replace(/^\S+\s*/, "");
+                const randomReplies = ["🤌🤱🥺", "Yes, I am here", "What's up?", "মেয়ে হলে বস সিয়াম কে KISS দে 😒", "অবহেলা করিস না যখন নিজেকে বদলে ফেলবো", "চুমু খাওয়ার বয়স টা চকলেট খেয়ে উড়িয়ে দিল সিয়াম বস", "Bolo jaan ki korte pari"];
+                
+                if (!arr) {
+                    const replyStr = randomReplies[Math.floor(Math.random() * randomReplies.length)];
+                    const sentMsg = await bot.sendMessage(chatId, toBold(replyStr), { reply_to_message_id: msg.message_id });
+                    if (global.activeReplies) {
+                        global.activeReplies.set(sentMsg.message_id, {
+                            commandName: "baby",
+                            author: uid
+                        });
+                    }
+                    return;
+                }
+
+                const res = await axios.get(`${await baseApiUrl()}/baby?text=${encodeURIComponent(arr)}&senderID=${uid}&font=1`);
+                const a = res.data.reply;
+                const sentMsg = await bot.sendMessage(chatId, toBold(a), { reply_to_message_id: msg.message_id });
+                if (global.activeReplies) {
+                    global.activeReplies.set(sentMsg.message_id, {
+                        commandName: "baby",
+                        author: uid
+                    });
+                }
+            }
+        } catch (err) {}
+    }
 };
