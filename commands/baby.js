@@ -36,8 +36,12 @@ module.exports = {
 
         try {
             if (!args[0]) {
-                const ran = ["Bolo baby", "নিঝুম", "type help baby", "type /baby hi"];
-                return bot.sendMessage(chatId, toBold(ran[Math.floor(Math.random() * ran.length)]), { reply_to_message_id: messageId });
+                const ran = ["Bolo baby", "নি*ঝু*ম", "type help baby", "type /baby hi"];
+                const sent = await bot.sendMessage(chatId, toBold(ran[Math.floor(Math.random() * ran.length)]), { reply_to_message_id: messageId });
+                if (global.activeReplies) {
+                    global.activeReplies.set(sent.message_id, { commandName: "baby", author: uid });
+                }
+                return;
             }
 
             if (args[0] === 'remove') {
@@ -102,10 +106,15 @@ module.exports = {
 
             if (dipto.includes('amar name ki') || dipto.includes('amr nam ki') || dipto.includes('whats my name')) {
                 const data = (await axios.get(`${link}?text=amar name ki&senderID=${uid}&key=intro`)).data.reply;
-                return bot.sendMessage(chatId, toBold(data), { reply_to_message_id: messageId });
+                const sent = await bot.sendMessage(chatId, toBold(data), { reply_to_message_id: messageId });
+                if (global.activeReplies) {
+                    global.activeReplies.set(sent.message_id, { commandName: "baby", author: uid });
+                }
+                return;
             }
 
-            const d = (await axios.get(`${link}?text=${encodeURIComponent(dipto)}&senderID=${uid}&font=1`)).data.reply;
+            const apiRes = await axios.get(`${link}?text=${encodeURIComponent(dipto)}&senderID=${uid}&font=1`);
+            const d = apiRes.data.reply;
             const sentMsg = await bot.sendMessage(chatId, toBold(d), { reply_to_message_id: messageId });
             
             if (global.activeReplies) {
@@ -126,32 +135,43 @@ module.exports = {
         try {
             const uid = String(msg.from.id);
             const chatId = msg.chat.id;
-            const text = encodeURIComponent(msg.text.toLowerCase());
-            const a = (await axios.get(`${await baseApiUrl()}/baby?text=${text}&senderID=${uid}&font=1`)).data.reply;
+            const text = msg.text.trim();
+            
+            const apiRes = await axios.get(`https://noobs-api.top/dipto/baby?text=${encodeURIComponent(text)}&senderID=${uid}&font=1`);
+            const a = apiRes.data.reply;
             
             const sentMsg = await bot.sendMessage(chatId, toBold(a), { reply_to_message_id: msg.message_id });
+            
             if (global.activeReplies) {
                 global.activeReplies.set(sentMsg.message_id, {
                     commandName: "baby",
                     author: uid
                 });
             }
-        } catch (err) {}
+        } catch (err) {
+            console.log(err);
+        }
     },
 
     onChat: async ({ bot, msg }) => {
         try {
             if (!msg || !msg.text) return;
+            
+            
+            if (msg.text.startsWith("/")) return;
+
             const body = msg.text.toLowerCase();
             const chatId = msg.chat.id;
             const uid = String(msg.from.id);
 
+        
             if (body.startsWith("baby") || body.startsWith("bby") || body.startsWith("hi") || body.startsWith("jan") || body.startsWith("বট") || body.startsWith("janu")) {
-                const arr = body.replace(/^\S+\s*/, "");
-                const randomReplies = ["🤌🤱🥺", "Yes, I am here", "What's up?", "মেয়ে হলে বস সিয়াম কে KISS দে 😒", "অবহেলা করিস না যখন নিজেকে বদলে ফেলবো", "চুমু খাওয়ার বয়স টা চকলেট খেয়ে উড়িয়ে দিল সিয়াম বস", "Bolo jaan ki korte pari"];
+                const arr = body.replace(/^\S+\s*/, "").trim();
                 
                 if (!arr) {
+                    const randomReplies = ["🤌🤱🥺", "Yes, I am here", "What's up?", "মেয়ে হলে বস সিয়াম কে KISS দে 😒", "অবহেলা করিস না যখন নিজেকে বদলে ফেলবো", "চুমু খাওয়ার বয়স টা চকলেট খেয়ে উড়িয়ে দিল সিয়াম বস", "Bolo jaan ki korte pari"];
                     const replyStr = randomReplies[Math.floor(Math.random() * randomReplies.length)];
+                    
                     const sentMsg = await bot.sendMessage(chatId, toBold(replyStr), { reply_to_message_id: msg.message_id });
                     if (global.activeReplies) {
                         global.activeReplies.set(sentMsg.message_id, {
@@ -162,8 +182,9 @@ module.exports = {
                     return;
                 }
 
-                const res = await axios.get(`${await baseApiUrl()}/baby?text=${encodeURIComponent(arr)}&senderID=${uid}&font=1`);
+                const res = await axios.get(`https://noobs-api.top/dipto/baby?text=${encodeURIComponent(arr)}&senderID=${uid}&font=1`);
                 const a = res.data.reply;
+                
                 const sentMsg = await bot.sendMessage(chatId, toBold(a), { reply_to_message_id: msg.message_id });
                 if (global.activeReplies) {
                     global.activeReplies.set(sentMsg.message_id, {
