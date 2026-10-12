@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 module.exports = {
-    botToken: process.env.BOT_TOKEN || '8664273023:AAEu9ICybK8hzbfQNBDNhUR-ADwjreagawI',
+    botToken: process.env.BOT_TOKEN || '8769306456:AAGEJMrPMcNPCc3-VNZPP4HxQq6vYrhcr2I',
     prefix: '/',
     ownerID: '8442705758',
     
